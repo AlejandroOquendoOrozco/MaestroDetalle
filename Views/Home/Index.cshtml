@@ -1,0 +1,152 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+<div class="container mt-5">
+    <div class="card shadow-lg border-0" style="border-radius: 15px;">
+        <div class="card-body">
+            <h4 class="card-title mb-4 text-center text-primary">Formulario de Registro de Productos</h4>
+            <div class="row">
+                <div class="mb-3">
+                    <label for="NumeroDocumento" class="form-label">Número Documento</label>
+                    <input type="text" class="form-control" id="inputName" placeholder="Ingrese su número de documento">
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="mb-3">
+                    <label for="RazonSocial" class="form-label">Razón Social</label>
+                    <input type="text" class="form-control" id="RazonSocial" placeholder="Razón Social">
+                </div>
+            </div>
+
+            <hr class="my-4" />
+
+            <div class="row">
+                <div class="col-sm-3">
+                    <div class="mb-3">
+                        <label for="Producto" class="form-label">Producto</label>
+                        <input type="text" class="form-control" id="Producto" placeholder="Producto">
+                    </div>
+                </div>
+
+                <div class="col-sm-3">
+                    <div class="mb-3">
+                        <label for="Precio" class="form-label">Precio</label>
+                        <input type="text" class="form-control" id="Precio" placeholder="Precio">
+                    </div>
+                </div>
+
+                <div class="col-sm-3">
+                    <div class="mb-3">
+                        <label for="Cantidad" class="form-label">Cantidad</label>
+                        <input type="text" class="form-control" id="Cantidad" placeholder="Cantidad">
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-sm-12 d-flex justify-content-end">
+                    <button class="btn btn-primary me-2" id="BtnTerminar">Terminar</button>
+                    <button class="btn btn-success" id="BtnAgregar">Agregar</button>
+                </div>
+            </div>
+
+            <div class="row mt-4">
+                <div class="col-sm-12">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover" id="TbProducto">
+                            <thead class="table-primary">
+                                <tr>
+                                    <th scope="col">Producto</th>
+                                    <th scope="col">Precio</th>
+                                    <th scope="col">Cantidad</th>
+                                    <th scope="col">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Aquí irán los productos -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+
+
+@section Scripts{
+    <script>
+        $("#BtnAgregar").on("click", function(){
+           
+            var Precio = parseFloat($("#Precio").val());
+            var Cantidad = parseFloat($("#Cantidad").val());
+
+           
+            var Total = Precio * Cantidad;
+
+           
+            $("#TbProducto tbody").append(
+                $("<tr>").append(
+                    $("<td>").text($("#Producto").val()),  
+                    $("<td>").text(Cantidad),                
+                    $("<td>").text(Precio),              
+                    $("<td>").text(Total)                  
+                )
+            );
+        });
+        $("#BtnTerminar").on("click", function(){
+
+            var DetalleVenta=[];
+            var Total=0;
+
+            $("#TbProducto > tbody > tr").each(function(index,tr){
+             
+                DetalleVenta.push(
+
+                     {
+                        Producto:$(tr).find("td:eq(0)").text(),
+                        Precio:parseFloat($(tr).find("td:eq(2)").text()),
+                        Cantidad:parseInt($(tr).find("td:eq(1)").text()),
+                        Total:parseFloat($(tr).find("td:eq(3)").text())
+                        
+                     
+                     }
+                )
+            
+                Total=Total+parseFloat($(tr).find("td:eq(3)").text());
+
+                var Venta = {
+                    NumeroDocumento: $("#NumeroDocumento").val(),  // Asegúrate de que este campo tenga un valor válido
+                    RazonSocial: $("#RazonSocial").val(),
+                    Total: Total.toFixed(2),  // Total debe estar correctamente calculado
+                    LstDetalleVenta: DetalleVenta  // Corrige el nombre del campo
+                };
+
+                jQuery.ajax({
+                
+                    url:"@Url.Action("GuardarVenta","Home")",
+                    type:"POST",
+                    data:JSON.stringify(Venta),
+                    dataType:"json",
+                    contentType: "application/json;charset=utf-8",
+                    success:function(data){
+                    
+                        console.log(data)
+                        if(data.respuesta){
+                            alert("VENTA REGISTRADA")
+                        }
+                    }
+                
+                })
+                console.log(JSON.stringify(Venta));  // Verifica que los datos enviados sean correctos
+
+            
+            })
+            
+        });
+    </script>
+}
